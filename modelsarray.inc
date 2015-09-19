@@ -15,9 +15,18 @@
 
 /*
 FUNCTIONS:
-native GetModelName(modelid, dest[], maxlength = sizeof(dest));
-native GetModelId(const modelname[]);
+native GetModelName(modelid, dest[], type = -1, maxlength = sizeof(dest));
+native GetModelId(const modelname[], type = -1);
+native GetModelType(modelid = -1, const modelname[] = "");
 */
+
+#define MODEL_TYPE_NONE (0)
+#define MODEL_TYPE_OBJECT (1)
+#define MODEL_TYPE_VEHICLE (2)
+#define MODEL_TYPE_SKIN (3)
+#define MODEL_TYPE_WEAPON (4)
+
+#define MAX_MODELS (20000)
 
 enum e_MODEL_NAMES {
 	e_modelId,
@@ -2960,21 +2969,49 @@ new const g_ModelNames[][e_MODEL_NAMES] = {
     {11751, !"AreaBoundary50m"}, {11752, !"AreaBoundary10m"}, {11753, !"AreaBoundary1m"}
 };
 
-stock GetModelName(modelid, dest[], maxlength = sizeof(dest)) {
+stock GetModelName(modelid, dest[], type = -1, maxlength = sizeof(dest)) {
 	dest[0] = EOS;
 
-	for (new i = 0, j = sizeof(g_ModelNames); i < j; i++) {
-		if (g_ModelNames[i][e_modelId] == modelid) {
-	    	strunpack(dest, g_ModelNames[i][e_modelName], maxlength);
-	    	return;
-	    }
+	for (new i = 0; i < MAX_MODELS; i++) {
+	    if (type != -1 && GetModelType(g_ModelNames[i][e_modelId]) == type) {
+			if (g_ModelNames[i][e_modelId] == modelid) {
+		    	strunpack(dest, g_ModelNames[i][e_modelName], maxlength);
+		    	return;
+		    }
+		}
 	}
 }
 
-stock GetModelId(const modelname[]) {
-	for (new i = 0, j = sizeof(g_ModelNames); i < j; i++) {
-		if (! strcmp(g_ModelNames[i][e_modelName], modelname, true)) {
-	    	return g_ModelNames[i][e_modelId];
-	    }
+stock GetModelId(const modelname[], type = -1) {
+	for (new i = 0; i < MAX_MODELS; i++) {
+	    if (type != -1 && GetModelType(g_ModelNames[i][e_modelId]) == type) {
+			if (! strcmp(g_ModelNames[i][e_modelName], modelname, true)) {
+		    	return g_ModelNames[i][e_modelId];
+		    }
+		}
 	}
+}
+
+stock GetModelType(modelid = -1, const modelname[] = "") {
+	if (! modelid) {
+	    modelid = GetModelId(modelname);
+	}
+	switch (modelid) {
+		case 0..311: {
+			return MODEL_TYPE_SKIN;
+		}
+		case 331..339,341,321..326,342..356,372,357..371: {
+			return MODEL_TYPE_WEAPON;
+		}
+		case 400..611: {
+			return MODEL_TYPE_VEHICLE;
+		}
+		default: {
+		    if (611 < modelid <= MAX_MODELS) {
+				return MODEL_TYPE_OBJECT;
+			}
+		}
+	}
+	
+	return MODEL_TYPE_NONE;
 }

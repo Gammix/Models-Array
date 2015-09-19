@@ -18,6 +18,7 @@ FUNCTIONS:
 native GetModelName(modelid, dest[], type = -1, maxlength = sizeof(dest));
 native GetModelId(const modelname[], type = -1);
 native GetModelType(modelid = -1, const modelname[] = "");
+native SearchModel(result[], const search[], size = sizeof(result));
 */
 
 #define MODEL_TYPE_NONE (0)
@@ -30,7 +31,7 @@ native GetModelType(modelid = -1, const modelname[] = "");
 
 enum e_MODEL_NAMES {
 	e_modelId,
-	e_modelName[24 char]
+	e_modelName[45 char]
 };
 
 new const g_ModelNames[][e_MODEL_NAMES] = {
@@ -2985,11 +2986,17 @@ stock GetModelName(modelid, dest[], type = -1, maxlength = sizeof(dest)) {
 stock GetModelId(const modelname[], type = -1) {
 	for (new i = 0; i < MAX_MODELS; i++) {
 	    if (type != -1 && GetModelType(g_ModelNames[i][e_modelId]) == type) {
-			if (! strcmp(g_ModelNames[i][e_modelName], modelname, true)) {
+	        new
+	            sModelName[45]
+			;
+		    strunpack(sModelName, g_ModelNames[i][e_modelName], sizeof(sModelName));
+			if (! strcmp(sModelName, modelname, true)) {
 		    	return g_ModelNames[i][e_modelId];
 		    }
 		}
 	}
+	
+	return -1;
 }
 
 stock GetModelType(modelid = -1, const modelname[] = "") {
@@ -3014,4 +3021,27 @@ stock GetModelType(modelid = -1, const modelname[] = "") {
 	}
 	
 	return MODEL_TYPE_NONE;
+}
+
+stock SearchModel(result[], const search[], type = -1, size = sizeof(result)) {
+	new
+	    iCount
+	;
+	for (new i = 0; i < MAX_MODELS; i++) {
+	    if (type != -1 && GetModelType(g_ModelNames[i][e_modelId]) == type) {
+	        new
+	            sModelName[45]
+			;
+		    strunpack(sModelName, g_ModelNames[i][e_modelName], sizeof(sModelName));
+			if (strfind(sModelName, search, true) != -1) {
+		    	result[iCount++] = g_ModelNames[i][e_modelId];
+		    	
+		    	if (iCount >= size) {
+					return iCount;
+				}
+		    }
+		}
+	}
+	
+	return iCount;
 }

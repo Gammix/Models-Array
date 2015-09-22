@@ -18,7 +18,7 @@ FUNCTIONS:
 native GetModelName(modelid, dest[], type = -1, maxlength = sizeof(dest));
 native GetModelId(const modelname[], type = -1);
 native GetModelType(modelid = -1, const modelname[] = "");
-native SearchModel(result[], const search[], size = sizeof(result));
+native SearchModel(result[], const search[], type = -1, size = sizeof(result));
 */
 
 #define MODEL_TYPE_NONE (0)
